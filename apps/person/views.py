@@ -55,7 +55,10 @@ class PatientView(viewsets.GenericViewSet):
     
     @action(detail=False, methods=["get"], url_path="apiclient/(?P<document>[0-9]+)")
     def apiclient(self, request, document=None):
-        [token, url] = ["98b6cb649290e8ffff6f3041b6f57d2d7e26ee816182052ff88444dd2505b0ce", "https://my.apidev.pro/api"]
+        import environ
+        env = environ.Env()
+        token = env("API_TOKEN")
+        url = env("API_URL")
         header = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer {}'.format(token)
