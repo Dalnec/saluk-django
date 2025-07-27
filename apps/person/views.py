@@ -1,0 +1,77 @@
+import requests
+from urllib3.exceptions import InsecureRequestWarning
+from drf_spectacular.utils import extend_schema
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from .models import Patient
+from .serializers import PatientSerializer
+from .filters import PatientFilter, PatientPagination
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+@extend_schema(tags=["Patient"])
+class PatientView(viewsets.GenericViewSet):
+    serializer_class = PatientSerializer
+    queryset = Patient.objects.all().order_by("-id")
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PatientFilter
+    pagination_class = PatientPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        patient = serializer.save()
+        patient.generate_code()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=["get"], url_path="apiclient/(?P<document>[0-9]+)")
+    def apiclient(self, request, document=None):
+        [token, url] = ["98b6cb649290e8ffff6f3041b6f57d2d7e26ee816182052ff88444dd2505b0ce", "https://my.apidev.pro/api"]
+        header = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer {}'.format(token)
+        }
+        
+        if len(document) != 8:
+            return  Response({"success": False, "message":f"No es un número válido {document}"})
+        patient = Patient.objects.filter(ci=document)
+        if patient.exists():
+            return  Response({"success": False, "message":f"El numero de documento '{document}' ya se encuentra registrado"})
+        url = f'{url}/dni/' + document
+
+        response = requests.get(url, headers=header, verify=False)
+        if response.status_code == 200:
+            return  Response(response.json(), status=status.HTTP_200_OK)
+        elif response.status_code == 404:
+            return  Response({"success": False, "message":"No encontrado!"})
+        else:
+            return  Response({"success": False, "message":"Error!"})
