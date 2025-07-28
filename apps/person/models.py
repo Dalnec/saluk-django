@@ -3,7 +3,7 @@ from model_utils.models import TimeStampedModel
 
 class Patient(TimeStampedModel):
     code = models.CharField(max_length=50, null=True, blank=True)
-    ci = models.CharField(max_length=50, unique=True)
+    ci = models.CharField(max_length=50, null=True, blank=True)
     names = models.CharField(max_length=100)
     lastnames = models.CharField(max_length=100)
     birthdate = models.DateField()
@@ -12,10 +12,16 @@ class Patient(TimeStampedModel):
     email = models.EmailField(blank=True, null=True)
     allergies = models.JSONField(blank=True, null=True)
     bloodType = models.CharField(max_length=5, blank=True, null=True)
+    address = models.CharField(max_length=200, blank=True, null=True)
+    contacts = models.JSONField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.names = self.names.upper()
         self.lastnames = self.lastnames.upper()
+        if not self.code: 
+            self.generate_code()
+        if not self.ci: 
+            self.ci = self.code
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -36,6 +42,6 @@ class Patient(TimeStampedModel):
         return 'Masculino' if self.gender == 'M' else 'Femenino'
     
     def generate_code(self):
-        count = Patient.objects.all().count()
+        count = Patient.objects.all().count() + 1
         self.code = f"P{count:04d}"
-        self.save()
+        # self.save()

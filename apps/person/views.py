@@ -36,9 +36,14 @@ class PatientView(viewsets.GenericViewSet):
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        document = request.data.get("ci", None)
+        if document is None:
+            return  Response({"success": False, "message":"El campo 'ci' es requerido"})
+        patient = Patient.objects.filter(ci=document)
+        if patient.exists() and document != "-":
+            return  Response({"success": False, "message":f"El numero de documento '{document}' ya se encuentra registrado"})
         serializer.is_valid(raise_exception=True)
         patient = serializer.save()
-        patient.generate_code()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def update(self, request, *args, **kwargs):

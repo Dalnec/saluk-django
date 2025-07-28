@@ -38,19 +38,21 @@ class DiagnosticSupport(TimeStampedModel):
 
 
 class Diagnosis(TimeStampedModel):
-    medicalHistory = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='diagnosis')
-    ciex = models.CharField(max_length=50, null=True, blank=True)
+    medicalHistory = models.OneToOneField(MedicalHistory, on_delete=models.CASCADE, related_name='diagnosis')
+    # medicalHistory = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='diagnosis')
+    # ciex = models.CharField(max_length=50, null=True, blank=True)
     description = models.TextField()
-    kind = models.CharField(max_length=100, null=True, blank=True)
+    # kind = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"Diagnosis for {self.medicalHistory.patient}"
 
 class Treatment(TimeStampedModel):
-    medicalHistory = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='treatments')
+    medicalHistory = models.OneToOneField(MedicalHistory, on_delete=models.CASCADE, related_name='treatments')
+    # medicalHistory = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='treatments')
     description = models.TextField()
-    concentration = models.CharField(max_length=100, null=True, blank=True)
-    presentation = models.CharField(max_length=10, null=True, blank=True)
+    # concentration = models.CharField(max_length=100, null=True, blank=True)
+    # presentation = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return f"Treatment for {self.medicalHistory.patient}"

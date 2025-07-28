@@ -34,8 +34,8 @@ class NoteSerializer(serializers.ModelSerializer):
 
 class MedicalHistorySerializer(WritableNestedModelSerializer):
     physical_exam = PhysicalExamSerializer(required=False)
-    diagnosis = DiagnosisSerializer(many=True, required=False)
-    treatments = TreatmentSerializer(many=True, required=False)
+    diagnosis = DiagnosisSerializer(required=False)
+    treatments = TreatmentSerializer(required=False)
     notes = NoteSerializer(required=False)
 
     class Meta:

@@ -51,7 +51,7 @@ class MedicalHistoryView(viewsets.GenericViewSet):
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
+        instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     @action(detail=False, methods=["GET"])
