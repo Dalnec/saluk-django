@@ -51,7 +51,7 @@ class ReportMedicalHistorySerializer(serializers.ModelSerializer):
     # patient_lastnames = serializers.ReadOnlyField(source="patient.lastnames")
     patient_gender = serializers.ReadOnlyField(source="patient.gender")
     patient_age = serializers.ReadOnlyField(source="patient.age")
-    patient_allergies = serializers.ReadOnlyField(source="patient.allergies")
+    # patient_allergies = serializers.ReadOnlyField(source="patient.allergies")
     pe_summaryAnamnesis = serializers.ReadOnlyField(source="physical_exam.summaryAnamnesis")
     pe_summaryPhysicalExam = serializers.ReadOnlyField(source="physical_exam.summaryPhysicalExam")
     diagnostico_description = serializers.ReadOnlyField(source="diagnosis.description")
@@ -70,14 +70,13 @@ class ReportMedicalHistorySerializer(serializers.ModelSerializer):
             # "patient_lastnames",
             "patient_gender",
             "patient_age",
-            "patient_allergies",
+            "allergies_description",
             "pe_summaryAnamnesis",
             "pe_summaryPhysicalExam",
             "diagnostico_description",
             "treatment_description",
             "notes_notes",
             "notes_observations",
-            "allergies_description",
         ]
     
     def get_allergies_description(self, obj) -> str:
