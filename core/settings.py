@@ -156,7 +156,7 @@ REST_FRAMEWORK = {
         # 'core.settings.secureMiddleware.HTTPSRenderer',
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
-        # "drf_excel.renderers.XLSXRenderer",
+        "drf_excel.renderers.XLSXRenderer",
     ),
 }
 

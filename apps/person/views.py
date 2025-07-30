@@ -1,12 +1,15 @@
 import requests
 from urllib3.exceptions import InsecureRequestWarning
-from drf_spectacular.utils import extend_schema
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema
+from drf_excel.mixins import XLSXFileMixin
+from drf_excel.renderers import XLSXRenderer
 from .models import Patient
-from .serializers import PatientSerializer
+from .serializers import *
 from .filters import PatientFilter, PatientPagination
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -83,3 +86,80 @@ class PatientView(viewsets.GenericViewSet):
             return  Response({"success": False, "message":"No encontrado!"})
         else:
             return  Response({"success": False, "message":"Error!"})
+
+
+@extend_schema( tags=["ReportPatient"], )
+class ReportPatientView(XLSXFileMixin, ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PatientFilter
+    queryset = Patient.objects.all().order_by("-created")
+    
+    serializer_class = ReportPatientSerializer
+    renderer_classes = (XLSXRenderer,)
+    filename = "reporte_pacientes.xlsx"
+
+    column_header = {
+        "titles": [
+            "CODIGO",
+            "DNI",
+            "NOMBRE COMPLETO",
+            "GENERO",
+            "F. NACIMIENTO",
+            "EDAD",
+            "TELEFONO",
+            "DIRECCION",
+            "ALERGIAS",
+            "# CONSULTAS",
+        ],
+        "column_width": [12, 12, 45, 10, 18, 10, 12, 35, 35, 14],
+        "height": 15,
+        "style": {
+            "fill": {
+                "fill_type": "solid",
+                "start_color": "FE879C",
+            },
+            "alignment": {
+                "horizontal": "center",
+                "vertical": "center",
+                "wrapText": True,
+                "shrink_to_fit": True,
+            },
+            "border_side": {
+                "border_style": "thin",
+                "color": "FF000000",
+            },
+            "font": {
+                "name": "Arial",
+                "size": 10,
+                "bold": True,
+                "color": "FF000000",
+            },
+        },
+    }
+    body = {
+        "height": 15,
+        "style": {
+            "alignment": {
+                "horizontal": "center",
+                "vertical": "center",
+                "wrapText": True,
+                "shrink_to_fit": True,
+            },
+            "border_side": {
+                "border_style": "thin",
+                "color": "FF000000",
+            },
+            "font": {
+                "name": "Arial",
+                "size": 10,
+                "bold": False,
+                "color": "FF000000",
+            },
+        },
+    }
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
