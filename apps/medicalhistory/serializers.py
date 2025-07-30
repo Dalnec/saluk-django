@@ -81,4 +81,4 @@ class ReportMedicalHistorySerializer(serializers.ModelSerializer):
         ]
     
     def get_allergies_description(self, obj) -> str:
-        return ", ".join(map(str, json.loads(obj.allergies)))
+        return ", ".join(map(str, json.loads(obj.patient.allergies)))
