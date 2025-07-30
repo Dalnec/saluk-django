@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from .models import *
@@ -57,6 +58,7 @@ class ReportMedicalHistorySerializer(serializers.ModelSerializer):
     treatment_description = serializers.ReadOnlyField(source="treatments.description")
     notes_notes = serializers.ReadOnlyField(source="notes.notes")
     notes_observations = serializers.ReadOnlyField(source="notes.observations")
+    allergies_description = serializers.SerializerMethodField()
     
     class Meta:
         model = MedicalHistory
@@ -75,4 +77,8 @@ class ReportMedicalHistorySerializer(serializers.ModelSerializer):
             "treatment_description",
             "notes_notes",
             "notes_observations",
+            "allergies_description",
         ]
+    
+    def get_allergies_description(self, obj) -> str:
+        return ", ".join(map(str, json.loads(obj.allergies)))
